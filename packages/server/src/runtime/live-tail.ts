@@ -152,6 +152,8 @@ export interface LiveTail {
   observe(sessionId: string, msg: OmniMessage): void;
   fragments(sessionId: string): OmniMessage[];
   clear(sessionId: string): void;
+  /** Older runtime-held trackers predate memory telemetry. */
+  size?(sessionId: string): { fragments: number; units: number };
 }
 
 export class LiveTailTracker implements LiveTail {
@@ -238,5 +240,12 @@ export class LiveTailTracker implements LiveTail {
   /** Drop all fragment state for a session (the run ended; nothing will continue these fragments). */
   clear(sessionId: string): void {
     this.sessions.delete(sessionId);
+  }
+
+  size(sessionId: string): { fragments: number; bytes: number } {
+    const open = this.sessions.get(sessionId);
+    let bytes = 0;
+    for (const frag of open?.values() ?? []) bytes += frag.buffer.length;
+    return { fragments: open?.size ?? 0, bytes };
   }
 }
