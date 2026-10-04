@@ -76,6 +76,8 @@ export interface PluginLoadResult {
   failed: Map<string, string>;
   /** The generation this load activated, or null when activation failed and the current one was kept. */
   activation: Activation | null;
+  /** specifier → how long its import and check took; a reused entry has none. */
+  importMs: Map<string, number>;
 }
 /** The Project ids of a data root: every directory holding a `.project_config.toml`. */
 export async function listProjectIds(root: string): Promise<string[]> {
@@ -589,10 +591,9 @@ export async function loadPlugins(
   reuse: ReadonlyMap<string, LoadedPlugin> = new Map(),
   /** This server's own machine id, which selects its `[plugins.<id>]` tables; null reads the shared tables alone. */
   machineId: string | null = null,
-  /** Each plugin's import and check, timed (telemetry's plugin.load); absent, nothing is timed. */
-  observe?: (specifier: string, ms: number, ok: boolean) => void,
 ): Promise<PluginLoadResult> {
   const failed = new Map<string, string>();
+  const importMs = new Map<string, number>();
   const pushedAssets = assetsDir === undefined ? await committedAssetsDir(root) : assetsDir;
   // The closure over this root's Projects, and nothing else. A plugin the BUILD ships is
   // available without a download — that is what `builtin` means — but availability is not
@@ -697,10 +698,10 @@ export async function loadPlugins(
     } catch (err) {
       failed.set(specifier, err instanceof Error ? err.message : String(err));
     } finally {
-      observe?.(specifier, performance.now() - startedAt, !failed.has(specifier));
+      importMs.set(specifier, performance.now() - startedAt);
     }
   }
-  return { loaded, failed, activation };
+  return { loaded, failed, activation, importMs };
 }
 
 /**
@@ -731,7 +732,7 @@ export async function loadPluginHost(
   // specifier is imported again, which the ESM cache makes cheap.
   const reuse =
     typeof inherited.entries === "function" ? inherited.entries() : new Map<string, LoadedPlugin>();
-  const result = await loadPlugins(root, assetsDir, reuse, machineId, observe);
+  const result = await loadPlugins(root, assetsDir, reuse, machineId);
   const host = new PluginHost();
   for (const entry of result.loaded) {
     // A module name clash is a LOAD failure, isolated per entry like an import failure.
@@ -748,5 +749,9 @@ export async function loadPluginHost(
     host.skip(specifier, reason);
     console.warn(`[plugins] skipped ${specifier}: ${reason}`);
   }
+  // Reported once admission is settled, so a plugin the host refused (a module clash) is
+  // not ok however cleanly it imported.
+  for (const [specifier, ms] of result.importMs)
+    observe?.(specifier, ms, !result.failed.has(specifier));
   return host;
 }
