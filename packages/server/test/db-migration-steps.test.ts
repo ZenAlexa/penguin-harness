@@ -309,6 +309,7 @@ describe("machines-columns → current: browser-extensions", () => {
         "port-forwards-adoption",
         "port-forwards-direction",
         "model-tables-adoption",
+        "error-records-context",
         "messaging-conversations",
       ]);
       db.exec("PRAGMA foreign_keys = ON");
