@@ -207,9 +207,10 @@ export function PluginsPage() {
   /** The registry: every module plugin this deployment could ask for. */
   const [index, setIndex] = useState<PluginIndexEntry[] | null>(null);
   /**
-   * Sources that answered with nothing. A published index that is down shortens the list
-   * instead of emptying it (the server merges tolerantly), so the page has to say so — a
-   * silently shorter list reads as "that plugin does not exist".
+   * The registry's request failed. A published index that is down shortens the list instead
+   * of emptying it (the server merges tolerantly), and the whole request failing leaves none
+   * of it — so the page has to say so: a silently shorter list reads as "that plugin does
+   * not exist", and a missing entry must not claim the registry had answered.
    */
   const [indexFailures, setIndexFailures] = useState<{ source: string; error: string }[]>([]);
   /**
@@ -347,7 +348,10 @@ export function PluginsPage() {
         () => {
           if (cancelled) return;
           // A re-read that fails keeps what the last one listed.
+          // An empty answer is an answer; a failed request is not, and the rows with no entry
+          // must not read as though the registry had said "not listed".
           setIndex((prev) => prev ?? []);
+          setIndexFailures([]);
           setIndexPending(0);
         },
       );

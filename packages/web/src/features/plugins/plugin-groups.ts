@@ -36,6 +36,10 @@ export interface ModulePart {
   shipped: boolean;
   /** Listed in the shared table, which this page never edits. */
   shared?: true;
+  /** The version actually resolved by the machine in view. */
+  version?: string;
+  otherPlatform?: string[];
+  registry?: "loading" | "failed" | "answered";
   /** Why Remove is unavailable in this view, when it is. */
   removeBlocked?: string;
 }
@@ -107,6 +111,54 @@ function stateIn(
  * registry's entries it does not list, and what the build ships that no index knows (offered
  * without a description: the build has it, so it installs without a download).
  */
+export function indexEntryOf(
+  index: readonly PluginIndexEntry[],
+  name: string,
+): PluginIndexEntry | undefined {
+  return index.find((e) => e.name === name);
+}
+
+/**
+ * The version of the copy the machine in view has on disk: that machine's own answer for
+ * another machine, this server's otherwise — what it resolves there, which is not
+ * necessarily what the registry lists (a machine can hold an older copy than the index).
+ */
+function versionIn(
+  listed: InstalledPluginsResponse["plugins"][number],
+  view: PluginView | undefined,
+  selfId: string | undefined,
+): string | undefined {
+  if (view === undefined || view.machineId === selfId) return listed.version;
+  return view.remote?.machineId === view.machineId
+    ? view.remote.plugins.find((p) => p.specifier === listed.specifier)?.version
+    : undefined;
+}
+
+/**
+ * The platforms an entry runs on when the machine in view is none of them, else undefined.
+ * Unknown either way — no `os` on the entry, or a server too old to say its platform — reads
+ * as applicable: the backend itself still declines to load where it cannot run.
+ */
+function otherPlatformOf(
+  entry: PluginIndexEntry | undefined,
+  platform: string | undefined,
+): string[] | undefined {
+  const os = entry?.os;
+  if (os === undefined || os.length === 0 || platform === undefined) return undefined;
+  return os.includes(platform) ? undefined : os;
+}
+
+/** A `process.platform` word as people name the OS; the same in every UI language. */
+export function platformName(platform: string): string {
+  return platform === "darwin"
+    ? "macOS"
+    : platform === "win32"
+      ? "Windows"
+      : platform === "linux"
+        ? "Linux"
+        : platform;
+}
+
 export function moduleParts(
   deployment: InstalledPluginsResponse | null,
   index: readonly PluginIndexEntry[],
@@ -117,10 +169,12 @@ export function moduleParts(
   for (const listed of deployment?.plugins ?? []) {
     if (!runsOn(listed, machineId)) continue;
     const shared = listed.everywhere !== false;
+    const version = versionIn(listed, view, deployment?.machineId);
     parts.push({
       specifier: listed.specifier,
       entry: index.find((e) => e.name === listed.specifier),
       ...stateIn(listed, view, deployment?.machineId),
+      ...(version === undefined ? {} : { version }),
       shipped:
         listed.builtin || (view?.remote ?? deployment)?.shipped.includes(listed.specifier) === true,
       ...(shared ? { shared: true as const, removeBlocked: S.plugins.sharedHint } : {}),
@@ -130,16 +184,25 @@ export function moduleParts(
   const listed = new Set(
     (deployment?.plugins ?? []).filter((p) => runsOn(p, machineId)).map((p) => p.specifier),
   );
-  const shippedList = (view?.remote ?? deployment)?.shipped ?? [];
+  const answer =
+    view === undefined || view.machineId === deployment?.machineId
+      ? deployment
+      : view.remote?.machineId === view.machineId
+        ? view.remote
+        : null;
+  const shippedList = answer?.shipped ?? [];
   const seen = new Set(parts.map((p) => p.specifier));
-  for (const entry of index) {
-    if (listed.has(entry.name) || seen.has(entry.name)) continue;
-    seen.add(entry.name);
+  for (const { name } of index) {
+    if (listed.has(name) || seen.has(name)) continue;
+    seen.add(name);
+    const entry = indexEntryOf(index, name)!;
+    const otherPlatform = otherPlatformOf(entry, answer?.platform);
     parts.push({
       specifier: entry.name,
       entry,
       state: "none",
       shipped: shippedList.includes(entry.name),
+      ...(otherPlatform === undefined ? {} : { otherPlatform }),
     });
   }
   for (const name of shippedList) {
@@ -147,7 +210,10 @@ export function moduleParts(
     seen.add(name);
     parts.push({ specifier: name, entry: undefined, state: "none", shipped: true });
   }
-  return parts;
+  return [
+    ...parts.filter((p) => p.otherPlatform === undefined),
+    ...parts.filter((p) => p.otherPlatform !== undefined),
+  ];
 }
 
 /**
@@ -280,7 +346,12 @@ export function groupRows(
   by: PluginGroupBy,
   categories: readonly { id: string; title: string }[],
 ): PluginGroup[] {
-  const sorted = [...rows].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  const sorted = [...rows].sort(
+    (a, b) =>
+      Number(a.module?.otherPlatform !== undefined) -
+        Number(b.module?.otherPlatform !== undefined) ||
+      (a.name < b.name ? -1 : a.name > b.name ? 1 : 0),
+  );
   const sections: { id: string; title: string; keep: (row: PluginRow) => boolean }[] =
     by === "category"
       ? categories.map((c) => ({ ...c, keep: (row) => row.category === c.id }))

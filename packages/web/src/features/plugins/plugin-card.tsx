@@ -49,7 +49,7 @@ import { useLocale } from "../../state/locale";
 import { agentDisplayName } from "../../state/project";
 import { SkillTile } from "../skills/skill-icon-view";
 import { MetaLine, PluginDetailModal, moduleOnThisServer } from "./plugin-detail";
-import type { PluginRow } from "./plugin-groups";
+import { platformName, type PluginRow } from "./plugin-groups";
 import { McpServerMarks, McpSetUpModal, StdioInstallBody } from "./plugin-mcp";
 import {
   PluginTag,
@@ -279,6 +279,10 @@ export function PluginCard(props: PluginCardProps) {
         ...(mod.state !== "none" ? [false] : []),
       ];
       for (const install of verbs) {
+        const cannotInstall =
+          install && mod.otherPlatform !== undefined
+            ? S.plugins.otherPlatformHint(mod.otherPlatform.map(platformName).join(" / "))
+            : null;
         const label = install
           ? props.busy
             ? S.plugins.installing
@@ -291,12 +295,17 @@ export function PluginCard(props: PluginCardProps) {
             className={look}
             aria-label={`${label} ${row.name}`}
             aria-busy={props.busy}
-            title={install ? label : (mod.removeBlocked ?? label)}
+            title={install ? (cannotInstall ?? label) : (mod.removeBlocked ?? label)}
             data-tooltip-extra={!install && mod.removeBlocked !== undefined}
             aria-describedby={
               !install && mod.shared === true ? `${sharedId}-tag ${sharedId}-hint` : undefined
             }
-            disabled={props.busy || props.blocked || (!install && mod.removeBlocked !== undefined)}
+            disabled={
+              props.busy ||
+              props.blocked ||
+              cannotInstall !== null ||
+              (!install && mod.removeBlocked !== undefined)
+            }
             onClick={() => props.onModuleApply(install)}
           >
             {props.busy ? (
@@ -429,7 +438,17 @@ export function PluginCard(props: PluginCardProps) {
         <div className="mt-2.5">
           <MetaLine>
             {version !== undefined && <span className="shrink-0 font-mono">v{version}</span>}
-            <StatusMark status={status} hint={hint} />
+            {row.module?.otherPlatform !== undefined ? (
+              <span
+                title={S.plugins.otherPlatformHint(
+                  row.module.otherPlatform.map(platformName).join(" / "),
+                )}
+              >
+                {S.plugins.otherPlatform(row.module.otherPlatform.map(platformName).join(" / "))}
+              </span>
+            ) : (
+              <StatusMark status={status} hint={hint} />
+            )}
             {usage !== null && (
               <span className="min-w-0 truncate">
                 {S.plugins.usedByAgents(usage.usedBy.length)}
