@@ -75,7 +75,7 @@ describe("parsePluginIndex", () => {
     const parsed = parsePluginIndex(doc, "test");
     expect(parsed.map((e) => e.version)).toEqual(["1.0.0", "1.1.0"]);
     // A present `os` — the platforms the plugin runs on — validates and is carried through.
-    expect(parsed[1].os).toEqual(["linux"]);
+    expect(parsed[1]?.os).toEqual(["linux"]);
   });
 
   it("rejects a non-array document and names the source", () => {
