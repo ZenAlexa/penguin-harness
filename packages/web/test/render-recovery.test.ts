@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ErrorBoundary } from "../src/rescue/error-boundary";
 import { RescuePanel } from "../src/rescue/rescue-panel";
+import { setSafeMode } from "../src/rescue/safe-mode";
 import { setPlatformForTests } from "../src/lib/shortcuts/platform";
 import { configureKeybindingsStoreForTests } from "../src/lib/shortcuts/store";
 import { setActiveStrings, zh } from "../src/lib/strings";
@@ -14,6 +15,7 @@ beforeEach(() => {
   configureKeybindingsStoreForTests({ storage: memoryStorage(), layout: null });
 });
 afterEach(() => {
+  setSafeMode(false);
   setActiveStrings(zh);
   setPlatformForTests(null);
   configureKeybindingsStoreForTests({ storage: null, layout: null });
