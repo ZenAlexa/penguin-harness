@@ -43,7 +43,10 @@ export function WorkflowAppPage() {
   const paletteShortcut = useShortcutLabel("palette.toggle");
 
   useEffect(() => {
-    if (safe) { setTab(null); return; }
+    if (safe) {
+      setTab(null);
+      return;
+    }
     let alive = true;
     const load = async () => {
       try {

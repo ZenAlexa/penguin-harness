@@ -142,7 +142,12 @@ export function AppPalette({ extra = NO_EXTRA }: { extra?: readonly PaletteActio
     () => [
       ...added,
       ...extra,
-      { id: "safe-mode", label: safe ? S.rescue.leaveAction : S.rescue.enterAction, keywords: ["safe mode", "contributions", "plugins"], run: () => setSafeMode(!safe) },
+      {
+        id: "safe-mode",
+        label: safe ? S.rescue.leaveAction : S.rescue.enterAction,
+        keywords: ["safe mode", "contributions", "plugins"],
+        run: () => setSafeMode(!safe),
+      },
       // The shell opens the window; the page only asks (see lib/desktop-window.ts).
       ...(newWindow
         ? [

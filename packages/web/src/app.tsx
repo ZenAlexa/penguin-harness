@@ -38,7 +38,10 @@ import { highlightCode } from "./features/chat/code-highlight";
  * `initialPath`: mount the app on an in-memory router opened at that path instead of the
  * browser's address bar (see AppRouter) — for a host document that frames the app.
  */
-export function App({ initialPath, Root = AppRouter }: { initialPath?: string; Root?: ComponentType<{ initialPath?: string }> } = {}) {
+export function App({
+  initialPath,
+  Root = AppRouter,
+}: { initialPath?: string; Root?: ComponentType<{ initialPath?: string }> } = {}) {
   // The guard reads `defaultPrevented` rather than assuming it runs last: the chat area's
   // drop zone is a window listener too, so the two fire in registration order. Both orders
   // converge — whichever runs second either finds the drag already claimed and bails, or

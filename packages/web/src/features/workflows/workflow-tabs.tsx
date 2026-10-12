@@ -91,7 +91,14 @@ export function useWorkflowTabs(
     if (active !== null && settled === null) setActiveRaw(null);
   }, [active, settled]);
   const activeTab = settled === null ? null : (tabs.find((t) => t.tabId === settled) ?? null);
-  return { tabs: visibleTabs, notices: visibleNotices, active: settled, activeTab, setActive: setActiveRaw, refresh };
+  return {
+    tabs: visibleTabs,
+    notices: visibleNotices,
+    active: settled,
+    activeTab,
+    setActive: setActiveRaw,
+    refresh,
+  };
 }
 
 /** How long a page that never finishes loading stays hidden before it is shown as it is. */
