@@ -20,6 +20,7 @@ import type { PaletteAction } from "@prismshadow/penguin-ui";
 import * as api from "../../api/endpoints";
 import { apiErrorText } from "../../lib/api-error";
 import { offersNewWindow } from "../../lib/desktop-window";
+import { useAddedPaletteActions } from "../../lib/palette-actions";
 import { onCommand } from "../../lib/shortcuts/dispatcher";
 import { useShortcutLabel } from "../../lib/shortcuts/use-keymap";
 import { S } from "../../lib/strings";
@@ -93,6 +94,7 @@ export function hostCommandActions(
  * workflow route registers its way out here, which is why it exists at all on that route.
  */
 export function AppPalette({ extra = NO_EXTRA }: { extra?: readonly PaletteAction[] }) {
+  const added = useAddedPaletteActions();
   const [open, setOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -136,6 +138,7 @@ export function AppPalette({ extra = NO_EXTRA }: { extra?: readonly PaletteActio
 
   const actions = useMemo<PaletteAction[]>(
     () => [
+      ...added,
       ...extra,
       // The shell opens the window; the page only asks (see lib/desktop-window.ts).
       ...(newWindow
@@ -180,7 +183,7 @@ export function AppPalette({ extra = NO_EXTRA }: { extra?: readonly PaletteActio
         },
       },
     ],
-    [extra, offers, locale, newWindow],
+    [added, extra, offers, locale, newWindow],
   );
 
   return (

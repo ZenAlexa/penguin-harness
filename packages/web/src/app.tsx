@@ -25,6 +25,9 @@ import { BackgroundProvider } from "./state/background";
 import { AuthProvider } from "./state/auth";
 import { AppRouter } from "./router";
 import { UnsavedPrompt } from "./lib/unsaved/unsaved-prompt";
+import { AppPalette } from "./features/palette/app-palette";
+import { ErrorBoundary } from "./rescue/error-boundary";
+import { RescuePanel } from "./rescue/rescue-panel";
 import { writeClipboard } from "./lib/clipboard";
 import { guardWindowDragOver, guardWindowDrop } from "./lib/file-drop";
 import { highlightCode } from "./features/chat/code-highlight";
@@ -54,7 +57,12 @@ export function App({ initialPath }: { initialPath?: string } = {}) {
             <BackgroundProvider>
               <AuthProvider>
                 <LocaleScope>
-                  <AppRouter {...(initialPath === undefined ? {} : { initialPath })} />
+                  <ErrorBoundary fallback={(error) => <RescuePanel error={error} />}>
+                    <AppRouter {...(initialPath === undefined ? {} : { initialPath })} />
+                  </ErrorBoundary>
+                  <ErrorBoundary fallback={() => null}>
+                    <AppPalette />
+                  </ErrorBoundary>
                   {/* Top toast overlay: portaled to body, z-index above modals, shared site-wide. */}
                   <Toaster />
                   {/* The one "discard unsaved changes?" prompt every leave asks through, and the

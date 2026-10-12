@@ -1024,6 +1024,15 @@ export const en: Strings = {
     openDevTools: "Open DevTools",
     projectOnGitHub: "Project on GitHub",
   },
+  rescue: {
+    title: "Something broke the page",
+    desc: "A page failed while rendering. Reload, or open harness history to choose another version.",
+    reload: "Reload",
+    paletteHint: (palette: string | null): string =>
+      palette === null
+        ? "The command palette still works."
+        : `Press ${palette} to open the command palette.`,
+  },
   modelPicker: {
     groups: "Model groups",
     hideModelsWithoutKey: "Hide models without a key",

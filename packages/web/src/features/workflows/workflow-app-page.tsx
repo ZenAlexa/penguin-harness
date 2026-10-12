@@ -23,7 +23,7 @@ import {
   type WorkflowTab,
 } from "../../lib/workflow-tabs";
 import { rememberSelection } from "../../state/project";
-import { AppPalette } from "../palette/app-palette";
+import { usePaletteActions } from "../../lib/palette-actions";
 import { openUserEvents } from "../../api/sse";
 import { WorkflowFrame } from "./workflow-tabs";
 
@@ -90,6 +90,8 @@ export function WorkflowAppPage() {
     [projectId, agentId, navigate],
   );
 
+  usePaletteActions(exit);
+
   return (
     <div className="relative h-full w-full bg-white pt-[env(titlebar-area-height,0px)] dark:bg-gray-950">
       {/* A list request that fails after the page is up says so over it, rather than leaving
@@ -121,7 +123,6 @@ export function WorkflowAppPage() {
           <span>{S.workflows.exitHint(paletteShortcut)}</span>
         </div>
       )}
-      <AppPalette extra={exit} />
     </div>
   );
 }

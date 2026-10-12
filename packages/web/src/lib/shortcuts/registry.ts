@@ -17,6 +17,7 @@ import type { Chord, CommandId, Platform, ShortcutCommand, ShortcutGroup } from 
 export const SHORTCUT_COMMANDS: readonly ShortcutCommand[] = [
   {
     id: "palette.toggle",
+    overDialogs: true,
     scope: "global",
     group: "general",
     // Mod+P is the browser's Print. On macOS this takes over Chrome's ⌥⌘P (Page Setup).
