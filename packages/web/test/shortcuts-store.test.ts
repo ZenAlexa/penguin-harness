@@ -218,9 +218,9 @@ describe("external changes and the keyboard layout", () => {
     setBinding("palette.toggle", parseChord("Mod+Alt+KeyR"));
     expect(isOverridden("palette.toggle")).toBe(false);
     // A stored user chord is physical and does not move.
-    setBinding("palette.toggle", parseChord("Mod+Alt+KeyP"));
+    setBinding("palette.toggle", parseChord("Mod+Shift+KeyP"));
     expect(bindingOf("palette.toggle")?.code).toBe("KeyP");
-    expect(stored()).toEqual({ v: 1, linux: { "palette.toggle": "Mod+Alt+KeyP" } });
+    expect(stored()).toEqual({ v: 1, linux: { "palette.toggle": "Mod+Shift+KeyP" } });
   });
 });
 

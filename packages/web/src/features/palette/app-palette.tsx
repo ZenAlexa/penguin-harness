@@ -20,6 +20,7 @@ import type { PaletteAction } from "@prismshadow/penguin-ui";
 import * as api from "../../api/endpoints";
 import { apiErrorText } from "../../lib/api-error";
 import { offersNewWindow } from "../../lib/desktop-window";
+import { setSafeMode, useSafeMode } from "../../rescue/safe-mode";
 import { useAddedPaletteActions } from "../../lib/palette-actions";
 import { onCommand } from "../../lib/shortcuts/dispatcher";
 import { useShortcutLabel } from "../../lib/shortcuts/use-keymap";
@@ -95,6 +96,7 @@ export function hostCommandActions(
  */
 export function AppPalette({ extra = NO_EXTRA }: { extra?: readonly PaletteAction[] }) {
   const added = useAddedPaletteActions();
+  const safe = useSafeMode();
   const [open, setOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -140,6 +142,7 @@ export function AppPalette({ extra = NO_EXTRA }: { extra?: readonly PaletteActio
     () => [
       ...added,
       ...extra,
+      { id: "safe-mode", label: safe ? S.rescue.leaveAction : S.rescue.enterAction, keywords: ["safe mode", "contributions", "plugins"], run: () => setSafeMode(!safe) },
       // The shell opens the window; the page only asks (see lib/desktop-window.ts).
       ...(newWindow
         ? [
@@ -183,7 +186,7 @@ export function AppPalette({ extra = NO_EXTRA }: { extra?: readonly PaletteActio
         },
       },
     ],
-    [added, extra, offers, locale, newWindow],
+    [added, safe, extra, offers, locale, newWindow],
   );
 
   return (

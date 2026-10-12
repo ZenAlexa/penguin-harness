@@ -29,7 +29,7 @@ describe("render recovery", () => {
     );
     expect(html).toBe("<p>healthy</p>");
   });
-  it("renders reload and history without claiming contribution safe mode", () => {
+  it("renders reload and history with the safe-mode escape", () => {
     for (const dictionary of [zh, en]) {
       setActiveStrings(dictionary);
       const html = renderToStaticMarkup(
@@ -39,7 +39,7 @@ describe("render recovery", () => {
       expect(html).toContain("render failed");
       expect(html).toContain(dictionary.rescue.reload);
       expect(html).toContain(dictionary.commandPalette.harnessHistory);
-      expect(html).not.toContain("Reload without contributions");
+      expect(html).toContain(dictionary.rescue.reloadSafe);
     }
   });
   it("records the thrown error for the client boundary fallback", () => {
