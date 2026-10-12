@@ -58,7 +58,10 @@ watchInstallScope();
 
 // The rejection handler mounts too: bootInstallScope already swallows everything it can, and
 // the app must mount even if it somehow does not.
-void bootInstallScope().then((action) => {
-  if (action === "reload") location.reload();
-  else mount();
-}, (error: unknown) => mount(bootFailedRoot(error)));
+void bootInstallScope().then(
+  (action) => {
+    if (action === "reload") location.reload();
+    else mount();
+  },
+  (error: unknown) => mount(bootFailedRoot(error)),
+);
