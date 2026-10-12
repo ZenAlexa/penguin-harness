@@ -21,16 +21,20 @@ afterEach(() => {
 
 describe("render recovery", () => {
   it("renders healthy children without the fallback", () => {
-    const html = renderToStaticMarkup(createElement(ErrorBoundary, {
-      fallback: () => createElement("p", null, "failed"),
-      children: createElement("p", null, "healthy"),
-    }));
+    const html = renderToStaticMarkup(
+      createElement(ErrorBoundary, {
+        fallback: () => createElement("p", null, "failed"),
+        children: createElement("p", null, "healthy"),
+      }),
+    );
     expect(html).toBe("<p>healthy</p>");
   });
   it("renders reload and history without claiming contribution safe mode", () => {
     for (const dictionary of [zh, en]) {
       setActiveStrings(dictionary);
-      const html = renderToStaticMarkup(createElement(RescuePanel, { error: new Error("render failed") }));
+      const html = renderToStaticMarkup(
+        createElement(RescuePanel, { error: new Error("render failed") }),
+      );
       expect(html).toContain('role="alert"');
       expect(html).toContain("render failed");
       expect(html).toContain(dictionary.rescue.reload);

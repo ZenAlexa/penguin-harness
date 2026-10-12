@@ -41,4 +41,3 @@ export function RescuePanel({ error }: { error: unknown }) {
     </div>
   );
 }
-

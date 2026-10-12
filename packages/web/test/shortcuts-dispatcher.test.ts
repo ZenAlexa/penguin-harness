@@ -95,8 +95,7 @@ describe("the window listener", () => {
     expect(repeat.defaultPrevented).toBe(true);
     // A repeat of a chord nothing answers is left to the browser, like its first press.
     expect(
-      fire({ code: "KeyP", key: "P", ctrlKey: true, altKey: true, repeat: true })
-        .defaultPrevented,
+      fire({ code: "KeyP", key: "P", ctrlKey: true, altKey: true, repeat: true }).defaultPrevented,
     ).toBe(false);
   });
 

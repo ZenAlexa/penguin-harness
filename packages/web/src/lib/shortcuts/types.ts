@@ -24,7 +24,8 @@ export type ShortcutScope = "global" | "terminal" | "editor";
 export type ShortcutGroup = "general" | "panels" | "terminal" | "editor";
 
 /**
- * The rebindable commands. `palette.toggle` is owned by the command palette (src/rescue/palette.tsx).
+ * The rebindable commands. `palette.toggle` is owned by the command palette; its id and default
+ * are reserved here so the settings page lists it before the palette lands.
  */
 export type CommandId =
   | "palette.toggle"
@@ -38,8 +39,7 @@ export type CommandId =
   | "terminal.toggle"
   | "terminal.new"
   | "terminal.close"
-  | "editor.save"
-  | "graph.search";
+  | "editor.save";
 
 /**
  * One key combination. `code` is the `KeyboardEvent.code` of the non-modifier key ("KeyW",
@@ -67,17 +67,14 @@ export interface ShortcutCommand {
    * Serialized chords ("Mod+Shift+KeyW"); null = unbound by default. `default` covers every
    * platform without an entry of its own.
    */
+  /** Allows the recovery palette to run over an open dialog or menu. */
+  overDialogs?: true;
   defaults: {
     default: string | null;
     mac?: string | null;
     windows?: string | null;
     linux?: string | null;
   };
-  /**
-   * Runs while a dialog or menu is open, where every other global command is held back (the
-   * dispatcher's blocker). Only the palette's toggle: it is the way back when the UI is stuck.
-   */
-  overDialogs?: true;
 }
 
 /** id → chord (null = unbound), fully resolved for the current platform. */

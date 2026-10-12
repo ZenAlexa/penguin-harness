@@ -1146,9 +1146,7 @@ export const zh = {
     desc: "页面渲染失败。可以重新加载，或打开版本历史选择另一个版本。",
     reload: "重新加载",
     paletteHint: (palette: string | null): string =>
-      palette === null
-        ? "命令面板仍可使用。"
-        : `按 ${palette} 打开命令面板。`,
+      palette === null ? "命令面板仍可使用。" : `按 ${palette} 打开命令面板。`,
   },
   modelPicker: {
     /** Accessible name of the dialog's provider-group rail. */
