@@ -431,24 +431,6 @@ describe("messaging-conversations → current: sessions-kept-at and the Agent AP
   });
 });
 
-/**
- * The first form of `port_forwards`: what port-forwards created on the roots that ran it
- * before its DDL was changed in place, and what port-forwards-adoption creates on a root
- * without the table — no direction, one local port per forward.
- */
-const PORT_FORWARDS_V1_DDL = `
-  CREATE TABLE port_forwards (
-    id          TEXT PRIMARY KEY,
-    machine_id  TEXT NOT NULL,
-    workspace   TEXT NOT NULL,
-    remote_port INTEGER NOT NULL,
-    local_port  INTEGER NOT NULL UNIQUE,
-    created_at  TEXT NOT NULL,
-    UNIQUE (machine_id, workspace, remote_port)
-  );
-  CREATE INDEX IF NOT EXISTS idx_port_forwards_machine ON port_forwards(machine_id, workspace);
-`;
-
 describe("the first form of port_forwards → current: port-forwards-direction", () => {
   /** A root that ran port-forwards in its first form and has a forward saved. */
   function openFirstForm(): DatabaseSync {
